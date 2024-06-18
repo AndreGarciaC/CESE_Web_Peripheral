@@ -6,6 +6,7 @@ const play_btn = document.getElementById('play_btn');
 //Variables
 let mediarecorder_obj;
 let audios = [];
+let audio_blob;
 
 //BLUETOOTH METHODS
 /**
@@ -90,5 +91,36 @@ play_btn.addEventListener('click', () => {
 
   } else {
     console.warn("No audio recording available to play.");
+  }
+});
+
+/**
+ * Uploads recorded audio to the server.
+ */
+async function upload_audio(blob) {
+  const form_data = new FormData();
+  form_data.append('audio_data', blob, 'recording.webm');
+
+  try {
+    const response = await fetch('upload.php', {
+      method: 'POST',
+      body: form_data
+    });
+
+    if (response.ok) {
+      console.log('Audio file successfully uploaded.');
+    } else {
+      console.error('Error uploading audio file:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error uploading audio file:', error);
+  }
+}
+
+// Call upload_audio function when playback ends
+play_btn.addEventListener('click', () => {
+  if (audios.length > 0) {
+    audio_blob = new Blob(audios, { type: 'audio/webm' });
+    upload_audio(audio_blob);
   }
 });
